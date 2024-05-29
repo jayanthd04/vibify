@@ -26,7 +26,7 @@ export default function Home(){
             navigate('/user');
         }
     },[token])
-    const api = process.env.REACT_APP_api_url;
+    //const api = process.env.REACT_APP_api_url;
     // create a state variable token that is initially set to ''
     // set token to response from /auth/token
     // create a new useEffect to set cookies.access_token to token 

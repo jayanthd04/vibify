@@ -19,7 +19,7 @@ export default function User(){
     const [username,setUsername] = useState("");
     const [numSongs,setNumSongs] = useState("");
     const [playlistName,setPlaylistName] = useState("");
-    const api = process.env.REACT_APP_api_url;
+    //const api = process.env.REACT_APP_api_url;
     //const sliderMax=1000; 
     const data = [
         {
