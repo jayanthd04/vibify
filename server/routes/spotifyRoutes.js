@@ -16,56 +16,6 @@ const client_secret = process.env.client_secret;
 
 module.exports = router; 
 
-router.get('/login',(req,res)=>{
-     var state = Math.random().toString(36).substring(2,18);
-     //var state = generateRandomString(16);
-     var scope = 'user-read-private user-read-email playlist-read-private playlist-modify-private';
-     res.redirect('https://accounts.spotify.com/authorize?'+
-	     querystring.stringify({
-		     response_type:'code',
-		     client_id:client_id,
-		     scope:scope,
-		     redirect_uri:redirect_uri,
-		     state:state
-     }));
-})
-router.get('/callback', async (req,res)=>{
-     var code = req.query.code || null;
-     var state = req.query.state || null;
-     if (state === null){
-	res.redirect('/#'+
-		querystring.stringify({
-			error: 'state_mismatch'
-	}));
-     } else{
-	var authOptions = {
-		url: 'https://accounts.spotify.com/api/token',
-		form: {
-			code: code, 
-			redirect_uri: redirect_uri,
-			grant_type: 'authorization_code'
-		},
-		headers: {
-			'content-type': 'application/x-www-form-urlencoded',
-			'Authorization': 'Basic ' + (new Buffer.from(client_id + ':'+ client_secret).toString('base64'))
-		},
-		json: true
-	};
-	request.post(authOptions,function(error,response,body){
-		//res.write(response.body.access_token,'utf8',()=>{
-		//});
-		//res.redirect('http://localhost:3000/');
-        ref = req.header('Referer');
-
-        console.log(ref);
-		//res.redirect('/')
-        res.redirect(303,'http://localhost:3000/user/?'+querystring.stringify(response.body));
-		//res.json(response.body)
-	})
-	//res.json(authOptions);
-     }
-})
-
 router.get('/getUserProfile',async(req,res)=>{
     // use user access token that is aquired after letting user authorize using spotify data. 
     var access_token = req.get("Authorization");
