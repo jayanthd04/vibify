@@ -2,7 +2,10 @@ const express = require('express');
 const querystring = require('node:querystring');
 const dotenv = require('dotenv');
 const request = require('request');
-const vibService = require('./vibifyRoutes.js');
+const VibifyService = require('../services/vibify-service');
+const SpotifyService = require('../services/spotify-service');
+const vibifyService = new VibifyService();
+const spotifyService = new SpotifyService();
 dotenv.config();
 
 const router = express.Router();
@@ -48,80 +51,50 @@ router.get('/callback', async (req,res)=>{
 		},
 		json: true
 	};
-	request.post(authOptions,function(error,response){
+	request.post(authOptions,function(error,response,body){
 		//res.write(response.body.access_token,'utf8',()=>{
 		//});
 		//res.redirect('http://localhost:3000/');
-		res.redirect(303,'http://localhost:3000/user/?'+querystring.stringify(response.body));
+        ref = req.header('Referer');
+
+        console.log(ref);
+		//res.redirect('/')
+        res.redirect(303,'http://localhost:3000/user/?'+querystring.stringify(response.body));
 		//res.json(response.body)
 	})
 	//res.json(authOptions);
      }
 })
 
-router.get('/getUserProfile',(req,res)=>{
+router.get('/getUserProfile',async(req,res)=>{
     // use user access token that is aquired after letting user authorize using spotify data. 
     var access_token = req.get("Authorization");
-    var options = {
-	    url:'https://api.spotify.com/v1/me',
-	    headers:{'Authorization': 'Bearer '+access_token},
-	    json: true
-    };
-    request.get(options, function(error,response,body){
-	    if(!error && response.statusCode===200){
-	    	res.send(response.body.display_name);
-	    }
-	    else{
-		res.send({'error':'Invalid access token'});
-	    }
-    });
+    const resp = await spotifyService.getUserProfile(access_token);
+    res.send(resp);
 
 })
-router.get('/getTrackUri/:id',(req,res)=>{
-    //use app access token 
+router.post('/createNewPlaylistWithNsongsGivenValence&Energy/:valence/:energy/:n/:user_id/:playlist_name',async (req,res)=>{
+    var valence = Number(req.params.valence);
+    var energy = Number(req.params.energy); 
+    var n = Number(req.params.n);
+    var user_id = req.params.user_id; 
+    var playlist_name = req.params.playlist_name; 
     var access_token = req.get("Authorization");
-    var track_id = req.params.id;
-    var options = {
-	    url:'https://api.spotify.com/v1/tracks?ids='+track_id,
-	    headers:{'Authorization': 'Bearer '+access_token},
-	    json:true
-    };
-    request.get(options, function(error, response, body){
-	    res.send(response);
-    });
+    const songs = await vibifyService.getNRandomSongsGivenValenceAndEnergy(valence,energy,n);
+    const songIds = songs.map(item=>item.track_id);
+    console.log(songIds);
 
-})
-router.get('/getNewlyCreatedPlaylist/:user_id/:playlist_name',(req,res)=>{
-    var access_token = req.get("Authorization");
-    var user_id = req.params.user_id;
-    var playlist_name= req.params.playlist_name;
-    var options = {
-	    url: 'https://api.spotify.com/v1/users/'+user_id+'/playlists',
-	    headers:{'Authorization': 'Bearer '+access_token},
-	    body:{
-		    'name': playlist_name,
-		    'description': playlist_name+'.vib',
-		    'public':false
-	    },
-	    json:true
-    }
-    request.post(options,function(error,response,body){
-	    res.send(response);
-    })
-})
-router.post('/addSongsToPlaylist/:playlist_id',(req,res)=>{
-     var access_token = req.get("Authorization");
-     var playlist_id = req.params.playlist_id; 
-     var body = req.body;
-     //console.log(body)
-     var options = {
-	     url: 'https://api.spotify.com/v1/playlists/'+playlist_id+'/tracks',
-	     headers:{'Authorization': 'Bearer '+access_token},
-	     body:body,
-	     json:true
-     }
-     //console.log(body);
-     request.post(options,function(error,response,body){
-	     res.send(response);
-     })
+    // create playlist with name playlist_name and get playlist_id
+    const playlistId = await spotifyService.getNewlyCreatedPlaylist(user_id,playlist_name,access_token);
+    console.log(playlistId);
+    //res.send(playlistId);
+    
+    // get track uris for songIds 
+    const songUris=await spotifyService.getTrackUris(songIds,access_token);
+    console.log(songUris.length);
+    //res.send(songUris);
+    // add track uris to playlist
+    const resp =await spotifyService.addSongsToPlaylist(playlistId,songUris,access_token);
+    //console.log(resp);
+    res.send(resp);
 })

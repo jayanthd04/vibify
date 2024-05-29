@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const mongoString = process.env.DATABASE_URL;
 const vibifyRoutes = require('./routes/vibifyRoutes');
-const spotifyRoutes = require('./routes/spotifyRoutes')
-
+const spotifyRoutes = require('./routes/spotifyRoutes');
+const spotifyAuthRoutes = require('./routes/spotifyAuthRoutes');
 mongoose.connect(mongoString);
 const app = express();
 const database = mongoose.connection;
@@ -26,6 +26,7 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
   next();
 });
+app.use('/auth',spotifyAuthRoutes)
 app.use('/v1/vibify',vibifyRoutes)
 app.use('/v1/spotify',spotifyRoutes)
 
