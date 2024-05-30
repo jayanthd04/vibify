@@ -17,7 +17,8 @@ router.get('/login',(req,res)=>{
     var state = Math.random().toString(36).substring(2,18);
     var scope = 'user-top-read streaming user-read-private user-read-email playlist-read-private playlist-modify-private';
     //res.send("Login function");
-    redirect = req.header('Referer');
+    //redirect = req.header('Referer');
+    req.session.referer= req.header('Referer');
     console.log(redirect);
     res.redirect('https://accounts.spotify.com/authorize?'+
     querystring.stringify({
@@ -56,18 +57,26 @@ router.get('/callback',async(req,res)=>{
         request.post(authOptions,function(error,response,body){
             //ref = req.header('Referer') || '/';
             //console.log(req.headers);
-            access_token = body.access_token;
-            let back = redirect; 
-            redirect='';
+            //access_token = body.access_token;
+            req.session.access_token = body.access_token;
+            let back = req.session.referer; 
+            req.session.referer=null;
             res.redirect(back);
         })
     }
 })
 router.get('/token',async(req,res)=>{
     //to-do: add some sort of state variable so that just the original requester of token can have access to the token. 
-    let token = access_token;
-    access_token='';
-    res.json({
-        access_token:token
-    })
+    if(req.session.access_token){
+        let token = req.session.access_token;
+        req.session.access_token=null;
+        res.json({
+            access_token:token
+        });
+    }
+    else{
+        res.json({
+            access_token:''
+        });
+    }
 })
