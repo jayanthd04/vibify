@@ -10,16 +10,12 @@ const client_secret = process.env.client_secret;
 
 module.exports = router; 
 const redirect_url = 'http://localhost:8888/auth/callback';
-global.access_token='';
-global.redirect='';
 
 router.get('/login',(req,res)=>{
     var state = Math.random().toString(36).substring(2,18);
     var scope = 'user-top-read streaming user-read-private user-read-email playlist-read-private playlist-modify-private';
-    //res.send("Login function");
-    //redirect = req.header('Referer');
+
     req.session.referer= req.header('Referer');
-    console.log(redirect);
     res.redirect('https://accounts.spotify.com/authorize?'+
     querystring.stringify({
         response_type:'code',
@@ -29,7 +25,7 @@ router.get('/login',(req,res)=>{
         state:state
     }));
 })
-//var access_token;
+
 router.get('/callback',async(req,res)=>{
     var code = req.query.code || null;
     var state = req.query.state || null; 
@@ -55,9 +51,6 @@ router.get('/callback',async(req,res)=>{
         };
 
         request.post(authOptions,function(error,response,body){
-            //ref = req.header('Referer') || '/';
-            //console.log(req.headers);
-            //access_token = body.access_token;
             req.session.access_token = body.access_token;
             let back = req.session.referer; 
             req.session.referer=null;
@@ -65,8 +58,7 @@ router.get('/callback',async(req,res)=>{
         })
     }
 })
-router.get('/token',async(req,res)=>{
-    //to-do: add some sort of state variable so that just the original requester of token can have access to the token. 
+router.get('/token',async(req,res)=>{ 
     if(req.session.access_token){
         let token = req.session.access_token;
         req.session.access_token=null;
