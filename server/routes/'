@@ -51,11 +51,10 @@ router.post('/createNewPlaylistWithNsongsGivenValence&Energy/:valence/:energy/:n
 router.get('/getUserTopTracks',async(req,res)=>{
     var access_token=req.get("Authorization");
     const resp = await spotifyService.getUserTopTracks(access_token); 
-    res.send(resp.body.items.map(item=>item.id));
-    //res.send(resp.body.items)
+    res.send(resp.body.items.map(item=>{item.id,item.genres}));
 })
 router.get('/getUserTopArtists',async(req,res)=>{
     var access_token = req.get("Authorization");
     const resp = await spotifyService.getUserTopArtists(access_token);
-    res.send(resp.body.items.map(item=>({id:item.id,genres:item.genres})));
+    res.send(resp.body.items.map(item=>item.id));
 })

@@ -107,5 +107,50 @@ class SpotifyService{
         })
         return resp;
     }
+    async getUserTopTracks(access_token){
+        var options = {
+            url: 'https://api.spotify.com/v1/me/top/tracks?limit=50',
+            headers: {'Authorization': 'Bearer '+access_token
+            },
+            json:true
+        }
+        let resp; 
+        await new Promise((resolve,reject)=>{
+            request.get(options,function(error,response,body){
+                if(error){
+                    console.log(error);
+                    reject(error);
+                }
+                else{
+                    resp=response;
+                    resolve();
+                }
+            })
+        })
+        return resp; 
+    }
+    async getUserTopArtists(access_token){
+        var options = {
+            url: 'https://api.spotify.com/v1/me/top/artists?limit=50',
+            headers: {'Authorization': 'Bearer '+access_token
+            },
+            json:true
+        }
+        let resp;
+        await new Promise((resolve, reject)=>{
+            request.get(options,function(error,response,body){
+                if(error){
+                    console.log(error);
+                    reject(error);
+                }
+                else{
+                    resp=response;
+                    resolve();
+                }
+            })
+
+        })
+        return resp;
+    }
 }
 module.exports = SpotifyService;
