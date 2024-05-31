@@ -59,3 +59,8 @@ router.get('/getUserTopArtists',async(req,res)=>{
     const resp = await spotifyService.getUserTopArtists(access_token);
     res.send(resp.body.items.map(item=>({id:item.id,genres:item.genres})));
 })
+router.get('/getRecentlyPlayedTracks', async(req,res)=>{
+    var access_token = req.get("Authorization");
+    const resp = await spotifyService.getRecentlyPlayedTracks(access_token);
+    res.send(resp);
+})

@@ -13,7 +13,7 @@ const redirect_url = 'http://localhost:8888/auth/callback';
 
 router.get('/login',(req,res)=>{
     var state = Math.random().toString(36).substring(2,18);
-    var scope = 'user-top-read streaming user-read-private user-read-email playlist-read-private playlist-modify-private';
+    var scope = 'user-read-recently-played user-top-read user-read-private user-read-email playlist-read-private playlist-modify-private';
 
     req.session.referer= req.header('Referer');
     res.redirect('https://accounts.spotify.com/authorize?'+

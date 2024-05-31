@@ -1,7 +1,40 @@
 const request = require('request');
+const postResponse = async function(options){
+    let resp; 
+
+    await new Promise((resolve,reject)=>{
+        request.post(options,function(error,response,body){
+            if(error){
+                console.log(error);
+                reject(error);
+            }
+            else{
+                resp =response;
+                resolve();
+            }
+        });
+    });
+    return resp;
+};
+const getResponse = async function(options){
+    let resp; 
+    await new Promise((resolve,reject)=>{
+        request.get(options,function(error,response,body){
+            if(error){
+                console.log(error);
+                reject(error);
+            }
+            else{
+                resp = response; 
+                resolve();
+            }
+        });
+    });
+    return resp; 
+};
 class SpotifyService{
     async getNewlyCreatedPlaylist(userId,playlistName,accessToken){
-        var options ={
+        let options ={
             url:'https://api.spotify.com/v1/users/'+userId+'/playlists',
             headers:{'Authorization': 'Bearer '+accessToken},
             body:{
@@ -12,8 +45,8 @@ class SpotifyService{
             json:true
         }
         //var resp;
-        let resp;
-        await new Promise((resolve,reject)=>{
+        let resp = await postResponse(options);
+        /*await new Promise((resolve,reject)=>{
             request.post(options,function(error,response,body){
                 if(error){
                     console.log(error);
@@ -25,8 +58,9 @@ class SpotifyService{
                     resolve();
                 }
             });
-        }); 
-        return resp;
+        });*/ 
+        //return resp;
+        return resp.body.id;
     }
 
     async getTrackUris(songIds,access_token){
@@ -40,12 +74,12 @@ class SpotifyService{
             for(let k=1;k<split.length;k++){
                 paramString+=","+split[k];
             }
-            var options ={
+            let options ={
                 url:'https://api.spotify.com/v1/tracks?ids='+paramString,
                 headers:{'Authorization': 'Bearer '+access_token},
                 json:true
             }
-            await new Promise((resolve,reject)=>{
+            /*await new Promise((resolve,reject)=>{
                 request.get(options,function(error,response,body){
                     if(error){
                         console.log(error);
@@ -59,19 +93,22 @@ class SpotifyService{
                         resolve();
                     }
                 })
-            })
+            })*/
+            let r = await getResponse(options);
+            let uris = r.body.tracks.map(item=>item.uri);
+            resp.push.apply(resp,uris);
         }
         return resp;
     }
     async addSongsToPlaylist(playlistId,songUris,access_token){
-        var options = {
+        let options = {
            url: 'https://api.spotify.com/v1/playlists/'+playlistId+'/tracks',
            headers: {'Authorization': 'Bearer '+access_token},
            body:songUris,
            json:true
         };
-        let resp;
-        await new Promise((resolve,reject)=>{
+        let resp = await postResponse(options);
+        /*await new Promise((resolve,reject)=>{
             request.post(options,function(error,response,body){
                 if(error){
                     console.log(error);
@@ -82,18 +119,18 @@ class SpotifyService{
                     resolve();
                 }
             })
-        })
+        })*/
         return resp;
     }
     async getUserProfile(access_token){
-        var options ={
+        let options ={
             url:'https://api.spotify.com/v1/me',
             headers:{'Authorization': 'Bearer '+access_token
             },
             json:true
         }
-        let resp; 
-        await new Promise((resolve,reject)=>{
+        let resp = await getResponse(options); 
+        /*await new Promise((resolve,reject)=>{
             request.get(options,function(error,response,body){
                 if(error){
                     console.log(error);
@@ -104,18 +141,18 @@ class SpotifyService{
                     resolve();
                 }
             })
-        })
-        return resp;
+        })*/
+        return resp.body.display_name;
     }
     async getUserTopTracks(access_token){
-        var options = {
+        let options = {
             url: 'https://api.spotify.com/v1/me/top/tracks?limit=50',
             headers: {'Authorization': 'Bearer '+access_token
             },
             json:true
         }
-        let resp; 
-        await new Promise((resolve,reject)=>{
+        let resp = await getResponse(options); 
+        /*await new Promise((resolve,reject)=>{
             request.get(options,function(error,response,body){
                 if(error){
                     console.log(error);
@@ -126,18 +163,18 @@ class SpotifyService{
                     resolve();
                 }
             })
-        })
+        })*/
         return resp; 
     }
     async getUserTopArtists(access_token){
-        var options = {
+        let options = {
             url: 'https://api.spotify.com/v1/me/top/artists?limit=50',
             headers: {'Authorization': 'Bearer '+access_token
             },
             json:true
         }
-        let resp;
-        await new Promise((resolve, reject)=>{
+        let resp = await getResponse(options);
+        /*await new Promise((resolve, reject)=>{
             request.get(options,function(error,response,body){
                 if(error){
                     console.log(error);
@@ -149,7 +186,21 @@ class SpotifyService{
                 }
             })
 
-        })
+        })*/
+        return resp;
+    }
+    async getRecentlyPlayedTracks(access_token){
+        let time = Date.now();
+        let options = {
+            url: 'https://api.spotify.com/v1/me/player/recently-played',
+            headers: {'Authorization': 'Bearer '+access_token
+            },
+            json:true
+        };
+        let resp = await getResponse(options); 
+        /*await new Promise((resolve, reject)=>{
+            request.get(options, )
+        })*/
         return resp;
     }
 }
