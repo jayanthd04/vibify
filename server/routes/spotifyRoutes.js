@@ -62,5 +62,32 @@ router.get('/getUserTopArtists',async(req,res)=>{
 router.get('/getRecentlyPlayedTracks', async(req,res)=>{
     var access_token = req.get("Authorization");
     const resp = await spotifyService.getRecentlyPlayedTracks(access_token);
-    res.send(resp);
+    res.send(resp.body.items.map(item=>({name:item.track.id,artists:item.track.artists.map(i=>i.name)})));
 })
+router.get('/getTrackRecs/:valence/:energy',async(req,res)=>{
+    var access_token = req.get("Authorization");
+    var valence = Number(req.params.valence);
+    var energy = Number(req.params.energy);
+    
+    const shuffle = function(array){
+        for(let i= array.length-1;i>0;i--){
+            let rand = Math.floor(Math.random() * (i+1));
+            [array[i],array[j]] = [array[j],array[i]];
+        }
+    }
+    // get most recent tracks as well as their associated artists and genres 
+    // get top artists and their genres 
+    // get top tracks 
+    const recentlyPlayed = spotifyService.getRecentlyPlayedTracks(access_token);
+    const topArtists = spotifyService.getUserTopArtists(access_token);
+    // can have a max of 5 seed artists, genres, and tracks 
+    // maintain a unique set of genres 
+    // pick 3 random tracks from recently played 
+
+    // add the genres of the random recently played tracks to genres set 
+    // and add track ids to seed tracks 
+    // get 2 random artists from top artists and add their genres to genres set 
+    // and add artists to seed artists 
+    // add genres set to seed genres 
+})
+

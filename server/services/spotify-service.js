@@ -1,4 +1,5 @@
 const request = require('request');
+const querystring = require('node:querystring');
 const postResponse = async function(options){
     let resp; 
 
@@ -192,7 +193,7 @@ class SpotifyService{
     async getRecentlyPlayedTracks(access_token){
         let time = Date.now();
         let options = {
-            url: 'https://api.spotify.com/v1/me/player/recently-played',
+            url: 'https://api.spotify.com/v1/me/player/recently-played?limit=50',
             headers: {'Authorization': 'Bearer '+access_token
             },
             json:true
@@ -202,6 +203,43 @@ class SpotifyService{
             request.get(options, )
         })*/
         return resp;
+    }
+    async getTrackRecs(access_token,seedArtists, seedGenres,seedTracks,
+        valence,energy,numSongs){
+        // seedArtists, seedGenres, and seedTracks are arrays 
+        let artistString = seedArtists[0];
+        for(let i=1;i<seedArtists.length;i++){
+            artistString+=","+seedArtists[i];
+        }
+        let genreString=seedGenres[0];
+        for(let i=1;i<seedGenres.length;i++){
+            genreString+=","+seedGenres[i];
+        }
+        let trackString=seedTracks[0];
+        for(let i=1;i<seedTracks.length;i++){
+            trackString+=","+seedTracks[i];
+        }
+        let minValence=valence-0.01;
+        let maxValence= valence+0.01;
+        let minEnergy = energy-0.01;
+        let maxEnergy = energy-0.01;
+        let options = {
+            url: 'https://api.spotify.com/v1/recommendations?'+querystring.stringify({
+                seed_artists:artistString,
+                seed_genres: genreString,
+                seed_tracks: trackString,
+                min_energy: minEnergy,
+                max_energy: maxEnergy,
+                min_valence: minValence,
+                max_valence: maxValence
+            }),
+            headers:{'Authorization': 'Bearer '+access_token
+            },
+            json:true
+        }
+        let resp = await getResponse(options);
+
+        return resp; 
     }
 }
 module.exports = SpotifyService;
