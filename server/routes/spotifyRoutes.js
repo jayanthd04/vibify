@@ -64,6 +64,12 @@ router.get('/getRecentlyPlayedTracks', async(req,res)=>{
     const resp = await spotifyService.getRecentlyPlayedTracks(access_token);
     res.send(resp.body.items.map(item=>({name:item.track.id,artists:item.track.artists.map(i=>i.name)})));
 })
+
+/*
+ * Spotify recommendations endpoint doesn't work with valence and energy 
+ * can get user's top artists, tracks, and most recently played tracks 
+ *
+ * */
 router.get('/getTrackRecs/:valence/:energy',async(req,res)=>{
     var access_token = req.get("Authorization");
     var valence = Number(req.params.valence);
