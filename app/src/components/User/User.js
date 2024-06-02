@@ -5,6 +5,7 @@ import {useSearchParams} from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import Slider from 'rc-slider'
 import Flexbox from 'flexbox-react';
+import {useNavigate} from 'react-router-dom';
 import {useState,useEffect} from 'react';
 import VibifySlider from '../VibifySlider/VibifySlider';
 import VibifyInput from '../VibifyInput/VibifyInput';
@@ -13,12 +14,14 @@ import SpotifyPlayback from '../SpotifyPlayback/SpotifyPlayback';
 export default function User(){
 	const cookies = new Cookies();
     const sliderMax=1000;
+    const navigate = useNavigate();
     const [valence,setValence] = useState(sliderMax/2);
     const [energy,setEnergy] = useState(sliderMax/2);
     const [songCount,setSongCount] = useState([]);
     const [username,setUsername] = useState("");
     const [numSongs,setNumSongs] = useState("");
     const [playlistName,setPlaylistName] = useState("");
+    //const [access,setAccess] = useState("");
     //const api = process.env.REACT_APP_api_url;
     //const sliderMax=1000; 
     const data = [
@@ -39,6 +42,15 @@ export default function User(){
         })
 
     },[valence,energy])
+
+    useEffect(()=>{
+        const cookieChangeListener = (name,value) =>{
+            if(name.name==="access_token"&&!value){
+                navigate('/');
+            }
+        }
+        cookies.addChangeListener(cookieChangeListener);
+    },[]);
 
     if(!cookies.get("user")){
         axios.get('/api/v1/spotify/getUserProfile',{
@@ -134,9 +146,9 @@ export default function User(){
                         Create New Playlist
                         </Button>
                     </Flexbox>
-                    <Flexbox flexGrow={0.5}>
+        {/*<Flexbox flexGrow={0.5}>
                         <SpotifyPlayback token={cookies.get("access_token")}/>
-                    </Flexbox> 
+                    </Flexbox>*/} 
 
 				</Flexbox>
 			</header>

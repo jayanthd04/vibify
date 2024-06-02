@@ -61,12 +61,14 @@ router.get('/callback',async(req,res)=>{
 router.get('/token',async(req,res)=>{ 
     if(req.session.access_token){
         let token = req.session.access_token;
-        req.session.access_token=null;
+        //req.session.access_token=null;
+        //req.session.destroy();
         res.json({
             access_token:token
         });
     }
     else{
+        //console.log(req.session.access_token)
         res.json({
             access_token:''
         });

@@ -31,7 +31,9 @@ app.use(session({
     secret: crypto.randomBytes(64).toString('hex'),
     resave: false,
     saveUninitialized: true,
-    cookie: {secure: false}
+    cookie: {secure: false,
+        maxAge: 60 * 60 * 1000
+    }
 }));
 app.use('/auth',spotifyAuthRoutes)
 app.use('/v1/vibify',vibifyRoutes)

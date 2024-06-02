@@ -20,9 +20,16 @@ export default function Home(){
         getToken();
     },[]);
     useEffect(()=>{
-        if(token!=''){
-            cookies.set("access_token",token,{sameSite:'strict',path:"/",secure:"True"});
-            console.log(token);
+        if(token!==''){
+            if(!cookies.get("access_token")){
+                cookies.set("access_token",token,{
+                    sameSite:'strict',
+                    path:"/",
+                    secure:"True",
+                    expires: new Date(Date.now()+60 * 60 * 1000)
+                });
+            }
+            //console.log(token);
             navigate('/user');
         }
     },[token])
