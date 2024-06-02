@@ -68,7 +68,10 @@ router.get('/getRecentlyPlayedTracks', async(req,res)=>{
 /*
  * Spotify recommendations endpoint doesn't work with valence and energy 
  * can get user's top artists, tracks, and most recently played tracks 
- *
+ * use user's most recent tracks and top artists/tracks to get at least 
+ * 100k track recs and store them into tracks table as well as their features 
+ * if they are not already there 
+ * add the new recommended tracks to user recs table for the user.    
  * */
 router.get('/getTrackRecs/:valence/:energy',async(req,res)=>{
     var access_token = req.get("Authorization");
