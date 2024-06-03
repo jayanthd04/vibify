@@ -51,18 +51,17 @@ router.post('/createNewPlaylistWithNsongsGivenValence&Energy/:valence/:energy/:n
 router.get('/getUserTopTracks',async(req,res)=>{
     var access_token=req.get("Authorization");
     const resp = await spotifyService.getUserTopTracks(access_token); 
-    res.send(resp.body.items.map(item=>item.id));
-    //res.send(resp.body.items)
+    res.send(resp)
 })
 router.get('/getUserTopArtists',async(req,res)=>{
     var access_token = req.get("Authorization");
     const resp = await spotifyService.getUserTopArtists(access_token);
-    res.send(resp.body.items.map(item=>({id:item.id,genres:item.genres})));
+    res.send(resp);
 })
 router.get('/getRecentlyPlayedTracks', async(req,res)=>{
     var access_token = req.get("Authorization");
     const resp = await spotifyService.getRecentlyPlayedTracks(access_token);
-    res.send(resp.body.items.map(item=>({name:item.track.id,artists:item.track.artists.map(i=>i.name)})));
+    res.send(resp);
 })
 
 /*
@@ -71,7 +70,7 @@ router.get('/getRecentlyPlayedTracks', async(req,res)=>{
  * use user's most recent tracks and top artists/tracks to get at least 
  * 100k track recs and store them into tracks table as well as their features 
  * if they are not already there 
- * add the new recommended tracks to user recs table for the user.    
+ * add the new recommended tracks to user recs table for the user.
  * */
 router.get('/getTrackRecs/:valence/:energy',async(req,res)=>{
     var access_token = req.get("Authorization");
@@ -84,6 +83,7 @@ router.get('/getTrackRecs/:valence/:energy',async(req,res)=>{
             [array[i],array[j]] = [array[j],array[i]];
         }
     }
+    // max of 5 total values can be sent to all of the three seeds. 
     // get most recent tracks as well as their associated artists and genres 
     // get top artists and their genres 
     // get top tracks 

@@ -153,18 +153,7 @@ class SpotifyService{
             json:true
         }
         let resp = await getResponse(options); 
-        /*await new Promise((resolve,reject)=>{
-            request.get(options,function(error,response,body){
-                if(error){
-                    console.log(error);
-                    reject(error);
-                }
-                else{
-                    resp=response;
-                    resolve();
-                }
-            })
-        })*/
+        resp = resp.body.items.map(item=>item.id);
         return resp; 
     }
     async getUserTopArtists(access_token){
@@ -175,19 +164,10 @@ class SpotifyService{
             json:true
         }
         let resp = await getResponse(options);
-        /*await new Promise((resolve, reject)=>{
-            request.get(options,function(error,response,body){
-                if(error){
-                    console.log(error);
-                    reject(error);
-                }
-                else{
-                    resp=response;
-                    resolve();
-                }
-            })
-
-        })*/
+        resp = resp.body.items.map(item=>({
+            id:item.id, 
+            genres:item.genres
+        }));
         return resp;
     }
     async getRecentlyPlayedTracks(access_token){
@@ -199,9 +179,26 @@ class SpotifyService{
             json:true
         };
         let resp = await getResponse(options); 
-        /*await new Promise((resolve, reject)=>{
-            request.get(options, )
-        })*/
+
+        const getGenres = async function(url){
+            let options = {
+                url: url,
+                headers: { 'Authorization': 'Bearer '+access_token
+                },
+                json:true
+            }
+            let genres = await getResponse(options);
+            console.log(genres.body.genres);
+            return genres.body.genres;
+        }
+        resp = await Promise.all(
+            resp.body.items.map(async item=>({track_id:item.track.id,
+                artists:await Promise.all(
+                    item.track.artists.map(async i=>({
+                        artist_id:i.id,genres:await getGenres(i.href)
+                    }))
+                )}))
+        );
         return resp;
     }
     async getTrackRecs(access_token,seedArtists, seedGenres,seedTracks,
