@@ -72,10 +72,11 @@ router.get('/getRecentlyPlayedTracks', async(req,res)=>{
  * if they are not already there 
  * add the new recommended tracks to user recs table for the user.
  * */
-router.get('/getTrackRecs/:valence/:energy',async(req,res)=>{
+router.get('/getTrackRecs',async(req,res)=>{
+    // Todo: store topArtists and topTracks to db. 
     var access_token = req.get("Authorization");
-    var valence = Number(req.params.valence);
-    var energy = Number(req.params.energy);
+    //var valence = Number(req.params.valence);
+    //var energy = Number(req.params.energy);
     
     const shuffle = function(array){
         for(let i= array.length-1;i>0;i--){
@@ -87,8 +88,45 @@ router.get('/getTrackRecs/:valence/:energy',async(req,res)=>{
     // get most recent tracks as well as their associated artists and genres 
     // get top artists and their genres 
     // get top tracks 
-    const recentlyPlayed = spotifyService.getRecentlyPlayedTracks(access_token);
-    const topArtists = spotifyService.getUserTopArtists(access_token);
+    const recentlyPlayed = await spotifyService.getRecentlyPlayedTracks(access_token);
+    const topArtists = await spotifyService.getUserTopArtists(access_token);
+    const topTracks = await spotifyService.getUserTopTracks(access_token);
+    const recs = new Set();
+    
+    let track_id = [];
+    track_id.push(recentlyPlayed[0].track_id);
+    let artist = [];
+    artist.push(recentlyPlayed[0].artists[0].artist_id);
+    let genre = [];
+    genre.push(topArtists[0].genres[0]);
+    let recentRecs = await spotifyService.getTrackRecs(access_token,artist,genre,track_id);
+    console.log(recentRecs.headers);
+    /*for(let i=0;i<recentlyPlayed.length;i++){
+        const getRecentRecs = async function(){
+            let track_id = [];
+            track_id.push(recentlyPlayed[i].track_id);
+            let artist = [];
+            artist.push(recentlyPlayed[i].artists[0].artist_id);
+            let genre = [];
+            genre.push(recentlyPlayed[i].artists[0].genres[0]);
+        
+            let recentRecs = await spotifyService.getTrackRecs(access_token,artist,genre,track_id);
+            if(recentRecs.body.tracks){
+                recentRecs = recentRecs.body.tracks.map(item=>item.id);
+                recentRecs.forEach(item=>recs.add(item));
+            }
+            else{
+                console.log(recentRecs.body);
+            }
+        }
+        setTimeout(getRecentRecs,10000);
+        //console.log(recentRecs.length);
+    }*/
+    console.log(recs.size);
+    res.send({recently_played: recentlyPlayed,
+        top_artists: topArtists,
+        top_tracks: topTracks
+    });
     // can have a max of 5 seed artists, genres, and tracks 
     // maintain a unique set of genres 
     // pick 3 random tracks from recently played 

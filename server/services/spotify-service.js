@@ -179,7 +179,7 @@ class SpotifyService{
             json:true
         };
         let resp = await getResponse(options); 
-
+        /*const genreMap = new Map();
         const getGenres = async function(url){
             let options = {
                 url: url,
@@ -187,8 +187,16 @@ class SpotifyService{
                 },
                 json:true
             }
-            let genres = await getResponse(options);
-            console.log(genres.body.genres);
+            let genres; 
+            if(!genreMap.get(url)){
+                genres = await getResponse(options);
+                genreMap.set(url,genres);
+            }
+            else 
+                genres = genreMap.get(url);
+            //console.log(genres.body.genres);
+            console.log(genres.headers);
+            //console.log(genreMap.size);
             return genres.body.genres;
         }
         resp = await Promise.all(
@@ -198,11 +206,11 @@ class SpotifyService{
                         artist_id:i.id,genres:await getGenres(i.href)
                     }))
                 )}))
-        );
+        );*/
+        resp = resp.body.items.map(item=>({track_id:item.track.id,artists:item.track.artists.map(i=>i.id)}));
         return resp;
     }
-    async getTrackRecs(access_token,seedArtists, seedGenres,seedTracks,
-        valence,energy,numSongs){
+    async getTrackRecs(access_token,seedArtists, seedGenres,seedTracks){
         // seedArtists, seedGenres, and seedTracks are arrays 
         let artistString = seedArtists[0];
         for(let i=1;i<seedArtists.length;i++){
@@ -216,19 +224,20 @@ class SpotifyService{
         for(let i=1;i<seedTracks.length;i++){
             trackString+=","+seedTracks[i];
         }
-        let minValence=valence-0.01;
+        /*let minValence=valence-0.01;
         let maxValence= valence+0.01;
         let minEnergy = energy-0.01;
-        let maxEnergy = energy-0.01;
+        let maxEnergy = energy-0.01;*/
         let options = {
             url: 'https://api.spotify.com/v1/recommendations?'+querystring.stringify({
+                limit:100,
                 seed_artists:artistString,
                 seed_genres: genreString,
                 seed_tracks: trackString,
-                min_energy: minEnergy,
+                /*min_energy: minEnergy,
                 max_energy: maxEnergy,
                 min_valence: minValence,
-                max_valence: maxValence
+                max_valence: maxValence*/
             }),
             headers:{'Authorization': 'Bearer '+access_token
             },
