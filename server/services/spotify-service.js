@@ -170,6 +170,8 @@ class SpotifyService{
         }));
         return resp;
     }
+    static sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+    
     async getRecentlyPlayedTracks(access_token){
         let time = Date.now();
         let options = {
@@ -179,7 +181,8 @@ class SpotifyService{
             json:true
         };
         let resp = await getResponse(options); 
-        /*const genreMap = new Map();
+        const genreMap = new Map();
+        //const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
         const getGenres = async function(url){
             let options = {
                 url: url,
@@ -187,7 +190,7 @@ class SpotifyService{
                 },
                 json:true
             }
-            let genres; 
+            let genres;
             if(!genreMap.get(url)){
                 genres = await getResponse(options);
                 genreMap.set(url,genres);
@@ -195,10 +198,12 @@ class SpotifyService{
             else 
                 genres = genreMap.get(url);
             //console.log(genres.body.genres);
-            console.log(genres.headers);
+            //console.log(genres.headers);
             //console.log(genreMap.size);
+            await this.constructor.sleep(10000);
+            //await sleep(10000);
             return genres.body.genres;
-        }
+        }.bind(this);
         resp = await Promise.all(
             resp.body.items.map(async item=>({track_id:item.track.id,
                 artists:await Promise.all(
@@ -206,8 +211,8 @@ class SpotifyService{
                         artist_id:i.id,genres:await getGenres(i.href)
                     }))
                 )}))
-        );*/
-        resp = resp.body.items.map(item=>({track_id:item.track.id,artists:item.track.artists.map(i=>i.id)}));
+        );
+        /*resp = resp.body.items.map(item=>({track_id:item.track.id,artists:item.track.artists.map(i=>i.id)}));*/
         return resp;
     }
     async getTrackRecs(access_token,seedArtists, seedGenres,seedTracks){
