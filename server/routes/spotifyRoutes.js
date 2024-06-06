@@ -73,55 +73,43 @@ router.get('/getRecentlyPlayedTracks', async(req,res)=>{
  * */
 router.get('/getTrackRecs',async(req,res)=>{
     // Todo: store topArtists and topTracks to db. 
+    await SpotifyService.sleep(10000);
     var access_token = req.get("Authorization");
-    //var valence = Number(req.params.valence);
-    //var energy = Number(req.params.energy);
     
-    const shuffle = function(array){
-        for(let i= array.length-1;i>0;i--){
-            let rand = Math.floor(Math.random() * (i+1));
-            [array[i],array[j]] = [array[j],array[i]];
-        }
-    }
     // max of 5 total values can be sent to all of the three seeds. 
-    // get most recent tracks as well as their associated artists and genres 
-    // get top artists and their genres 
-    // get top tracks 
+    // get track recs for recently played tracks, and artists separately 
+    // get track recs for top artists and top tracks separately 
+    // 
     const recentlyPlayed = await spotifyService.getRecentlyPlayedTracks(access_token);
     const topArtists = await spotifyService.getUserTopArtists(access_token);
     const topTracks = await spotifyService.getUserTopTracks(access_token);
     const recs = new Set();
-    
-    for(let i=0;i<recentlyPlayed.length;i++){
-        
-        let track_id = [];
-        track_id.push(recentlyPlayed[i].track_id);
-        let artist = [];
-        artist.push(recentlyPlayed[i].artists[0].artist_id);
-        let genre = [];
-        genre.push(recentlyPlayed[i].artists[0].genres[0]);
-        
-        let recentRecs = await spotifyService.getTrackRecs(access_token,artist,genre,track_id);
+    const getRecsAndAddToSet = async function(artist,genre,track_id) {
+        await SpotifyService.sleep(5000);
+        let recentRecs = await spotifyService.getTrackRecs(access_token, artist,genre,
+        track_id); 
+        //console.log(recentRecs.body.seeds.length);
         if(recentRecs.body.tracks){
             recentRecs = recentRecs.body.tracks.map(item=>item.id);
             recentRecs.forEach(item=>recs.add(item));
         }
         else{
             console.log(recentRecs.body);
+            console.log(recentRecs.headers);
         }
-        await SpotifyService.sleep(5000);
-        //console.log(recentRecs.length);
+    } 
+    for(let i=0;i<recentlyPlayed.length;i++){
+        
+        let track_id = [];
+        track_id.push(recentlyPlayed[i].track_id);
+        let artist = [];
+        //artist.push(recentlyPlayed[i].artists[0].artist_id);
+        let genre = [];
+        //genre.push(recentlyPlayed[i].artists[0].genres[0]);
+        await getRecsAndAddToSet(artist,genre,track_id);
+        // could try at least two tries to get diff tracks and increase the number of tracks  
     }
     console.log(recs.size);
-    res.send(Array.from(recs));
-    // can have a max of 5 seed artists, genres, and tracks 
-    // maintain a unique set of genres 
-    // pick 3 random tracks from recently played 
-
-    // add the genres of the random recently played tracks to genres set 
-    // and add track ids to seed tracks 
-    // get 2 random artists from top artists and add their genres to genres set 
-    // and add artists to seed artists 
-    // add genres set to seed genres 
+    res.send(Array.from(recs)); 
 })
 

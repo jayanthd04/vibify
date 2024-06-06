@@ -182,8 +182,9 @@ class SpotifyService{
         };
         let resp = await getResponse(options); 
         const genreMap = new Map();
+        // don't need to get genres as it might be too broad 
         //const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
-        const getGenres = async function(url){
+        /*const getGenres = async function(url){
             let options = {
                 url: url,
                 headers: { 'Authorization': 'Bearer '+access_token
@@ -203,15 +204,10 @@ class SpotifyService{
             await this.constructor.sleep(10000);
             //await sleep(10000);
             return genres.body.genres;
-        }.bind(this);
-        resp = await Promise.all(
-            resp.body.items.map(async item=>({track_id:item.track.id,
-                artists:await Promise.all(
-                    item.track.artists.map(async i=>({
-                        artist_id:i.id,genres:await getGenres(i.href)
-                    }))
-                )}))
-        );
+        }.bind(this);*/
+        resp = resp.body.items.map(item=>({track_id:item.track.id,
+                artists: item.track.artists.map(i=> i.id)
+                }));
         /*resp = resp.body.items.map(item=>({track_id:item.track.id,artists:item.track.artists.map(i=>i.id)}));*/
         return resp;
     }
@@ -236,9 +232,9 @@ class SpotifyService{
         let options = {
             url: 'https://api.spotify.com/v1/recommendations?'+querystring.stringify({
                 limit:100,
-                seed_artists:artistString,
-                seed_genres: genreString,
-                seed_tracks: trackString,
+                seed_artists: seedArtists.length>0 ? seedArtists: []/*artistString*/,
+                seed_genres: seedGenres.length > 0 ? seedGenres: [],
+                seed_tracks: seedTracks.length >0 ? seedTracks: [],
                 /*min_energy: minEnergy,
                 max_energy: maxEnergy,
                 min_valence: minValence,
