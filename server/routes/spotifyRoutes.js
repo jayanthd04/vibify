@@ -85,7 +85,7 @@ router.get('/getTrackRecs',async(req,res)=>{
     const topTracks = await spotifyService.getUserTopTracks(access_token);
     const recs = new Set();
     const getRecsAndAddToSet = async function(artist,genre,track_id) {
-        await SpotifyService.sleep(2500);
+        //await SpotifyService.sleep(2500);
         let recentRecs = await spotifyService.getTrackRecs(access_token, artist,genre,
         track_id); 
         //console.log(recentRecs.body.seeds.length);
@@ -95,7 +95,14 @@ router.get('/getTrackRecs',async(req,res)=>{
         }
         else{
             console.log(recentRecs.body);
-            console.log(recentRecs.headers);
+            //console.log(recentRecs.headers);
+            if(recentRecs.headers['retry-after']){
+                let retry_after = Number(recentRecs.headers['retry-after']);
+                console.log(retry_after);
+            
+                //await SpotifyService.sleep(retry_after*1000);
+                //await getRecsAndAddToSet(artist,genre,track_id);
+            }
         }
     } 
     for(let i=0;i<recentlyPlayed.length;i++){
