@@ -85,7 +85,7 @@ router.get('/getTrackRecs',async(req,res)=>{
     const topTracks = await spotifyService.getUserTopTracks(access_token);
     const recs = new Set();
     const getRecsAndAddToSet = async function(artist,genre,track_id) {
-        await SpotifyService.sleep(5000);
+        await SpotifyService.sleep(2500);
         let recentRecs = await spotifyService.getTrackRecs(access_token, artist,genre,
         track_id); 
         //console.log(recentRecs.body.seeds.length);
@@ -108,6 +108,9 @@ router.get('/getTrackRecs',async(req,res)=>{
         //genre.push(recentlyPlayed[i].artists[0].genres[0]);
         await getRecsAndAddToSet(artist,genre,track_id);
         // could try at least two tries to get diff tracks and increase the number of tracks  
+        track_id = [];
+        artist.push(recentlyPlayed[i].artists[0]);
+        await getRecsAndAddToSet(artist,genre,track_id); 
     }
     console.log(recs.size);
     res.send(Array.from(recs)); 
