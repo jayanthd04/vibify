@@ -17,16 +17,23 @@ const postResponse = async function(options){
     });
     return resp;
 };
+const delay = (d) => new Promise((resolve)=>setTimeout(resolve,d));
 const getResponse = async function(options){
     let resp; 
     await new Promise((resolve,reject)=>{
-        request.get(options,function(error,response,body){
+        request.get(options,async function(error,response,body){
             if(error){
                 console.log(error);
                 reject(error);
             }
             else{
                 resp = response; 
+                if(resp.headers['retry-after']){
+                    let retry_after = Number(resp.headers['retry-after']);
+                    console.log(options.url,retry_after);
+                    await SpotifyService.sleep(retry_after*1000);
+                    resp = await getResponse(options);
+                }
                 resolve();
             }
         });

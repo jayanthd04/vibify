@@ -73,7 +73,7 @@ router.get('/getRecentlyPlayedTracks', async(req,res)=>{
  * */
 router.get('/getTrackRecs',async(req,res)=>{
     // Todo: store topArtists and topTracks to db. 
-    await SpotifyService.sleep(10000);
+    //await SpotifyService.sleep(10000);
     var access_token = req.get("Authorization");
     
     // max of 5 total values can be sent to all of the three seeds. 
@@ -96,13 +96,13 @@ router.get('/getTrackRecs',async(req,res)=>{
         else{
             console.log(recentRecs.body);
             //console.log(recentRecs.headers);
-            if(recentRecs.headers['retry-after']){
+            /*if(recentRecs.headers['retry-after']){
                 let retry_after = Number(recentRecs.headers['retry-after']);
                 console.log(retry_after);
             
-                //await SpotifyService.sleep(retry_after*1000);
-                //await getRecsAndAddToSet(artist,genre,track_id);
-            }
+                await SpotifyService.sleep(retry_after*1000);
+                await getRecsAndAddToSet(artist,genre,track_id);
+            }*/
         }
     } 
     for(let i=0;i<recentlyPlayed.length;i++){
