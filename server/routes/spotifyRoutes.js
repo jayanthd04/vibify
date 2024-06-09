@@ -13,7 +13,13 @@ const router = express.Router();
 const redirect_uri = 'http://localhost:8888/v1/spotify/callback';
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
+const MAX_REQS_PER_MIN = 50;
+const REQ_INTERVAL = 60000/MAX_REQS_PER_MIN;
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve,ms));
 module.exports = router; 
+
+let requestQueue = []; 
 
 router.get('/getUserProfile',async(req,res)=>{
     // use user access token that is aquired after letting user authorize using spotify data. 
