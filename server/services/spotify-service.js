@@ -30,6 +30,7 @@ const getResponse = async function(options){
                 resp = response; 
                 if(resp.headers['retry-after']){
                     let retry_after = Number(resp.headers['retry-after']);
+                    console.log(options.url,resp);
                     console.log(options.url,retry_after);
                     await SpotifyService.sleep(retry_after*1000);
                     resp = await getResponse(options);

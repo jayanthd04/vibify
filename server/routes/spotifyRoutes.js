@@ -13,14 +13,31 @@ const router = express.Router();
 const redirect_uri = 'http://localhost:8888/v1/spotify/callback';
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
-const MAX_REQS_PER_MIN = 50;
+const MAX_REQS_PER_MIN = 20;
 const REQ_INTERVAL = 60000/MAX_REQS_PER_MIN;
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve,ms));
 module.exports = router; 
 
 let requestQueue = []; 
+const processQueue = async () =>{
+    if(requestQueue.length === 0 )return; 
+    const {func,resolve,reject} = requestQueue.shift();
+    try {
+        const resp = await func(); 
+        resolve(resp);
+    }catch(error){
+        reject(error);
+    }
 
+    setTimeout(processQueue, REQ_INTERVAL);
+};
+const queueRequest = (func) =>{
+    return new Promise((resolve,reject)=>{
+        requestQueue.push({func,resolve,reject});
+        processQueue();
+    });
+};
 router.get('/getUserProfile',async(req,res)=>{
     // use user access token that is aquired after letting user authorize using spotify data. 
     var access_token = req.get("Authorization");
@@ -86,14 +103,14 @@ router.get('/getTrackRecs',async(req,res)=>{
     // get track recs for recently played tracks, and artists separately 
     // get track recs for top artists and top tracks separately 
     // 
-    const recentlyPlayed = await spotifyService.getRecentlyPlayedTracks(access_token);
-    const topArtists = await spotifyService.getUserTopArtists(access_token);
-    const topTracks = await spotifyService.getUserTopTracks(access_token);
+    const recentlyPlayed = await queueRequest(()=>spotifyService.getRecentlyPlayedTracks(access_token));
+    const topArtists = await queueRequest(()=>spotifyService.getUserTopArtists(access_token));
+    const topTracks = await queueRequest(()=>spotifyService.getUserTopTracks(access_token));
     const recs = new Set();
     const getRecsAndAddToSet = async function(artist,genre,track_id) {
         //await SpotifyService.sleep(2500);
-        let recentRecs = await spotifyService.getTrackRecs(access_token, artist,genre,
-        track_id); 
+        let recentRecs = await queueRequest(()=>spotifyService.getTrackRecs(access_token, artist,genre,
+        track_id)); 
         //console.log(recentRecs.body.seeds.length);
         if(recentRecs.body.tracks){
             recentRecs = recentRecs.body.tracks.map(item=>item.id);
