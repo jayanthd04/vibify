@@ -2,7 +2,7 @@
 Vibify is a Spotify companion web app that can create playlists based on the user's mood. 
 
 ## Demo 
-![Demo of Vibify working.](/assets/images/Vibify_Demo.mp4)
+![Demo of Vibify working.](/assets/videos/Vibify_Demo.mp4)
 ## Built Using 
 - MongoDB
 - Express.js
